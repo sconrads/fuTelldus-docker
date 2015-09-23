@@ -6,8 +6,8 @@ RUN apt-get update
 RUN apt-get -q -y install php-pear
 RUN apt-get -q -y install vim
 RUN apt-get -q -y install cron
-RUN echo "*/15 * * * * php -q /app/cron_temp_log.php" | crontab -
-RUN echo "*/5 * * * * php -q /app/cron_schedule.php" | crontab -   
+RUN (crontab -l 2>/dev/null; echo "*/15 * * * * php -q /app/cron_temp_log.php")| crontab -
+RUN (crontab -l ; echo "*/5 * * * * php -q /app/cron_schedule.php")| crontab -
 RUN pear install channel://pear.php.net/HTTP_OAuth-0.3.1
 RUN cp -r /usr/share/php/HTTP/* /app
 CMD ["/run.sh"]
