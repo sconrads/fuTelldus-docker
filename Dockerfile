@@ -5,12 +5,22 @@ EXPOSE 80 3306
 RUN apt-get update
 RUN apt-get -q -y install php-pear
 RUN apt-get -q -y install vim
-RUN apt-get -q -y install cron
-RUN (crontab -l 2>/dev/null; echo "*/15 * * * * php -q /app/cron_temp_log.php")| crontab -
-RUN (crontab -l ; echo "*/5 * * * * php -q /app/cron_schedule.php")| crontab -
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    cron \
+    rsyslog \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Import crontab file
+ADD ./crontab /etc/crontab
+RUN touch /var/log/cron.log
+
 RUN pear install channel://pear.php.net/HTTP_OAuth-0.3.1
 RUN cp -r /usr/share/php/HTTP/* /app
-CMD ["/run.sh"]
+
+CMD ./run.sh && rsyslogd && cron && tail -f /var/log/syslog /var/log/cron.log
 
 # Add a data container for the mysql database
 # You can use this Dockerfile: https://github.com/sconrads/fuTelldus-docker-data-container
